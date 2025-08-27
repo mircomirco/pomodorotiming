@@ -6,6 +6,7 @@
     <title>Pomodoro Timer con Firebase</title>
     <!-- Meta tag per PWA -->
     <meta name="theme-color" content="#1f2937"/>
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Pomodoro">
@@ -101,7 +102,7 @@
 
         // --- PWA SETUP ---
         const manifest = {
-            "name": "Pomodoro Timer", "short_name": "Pomodoro", "start_url": ".", "display": "standalone",
+            "name": "Pomodoro Timer", "short_name": "Pomodoro", "start_url": "./", "display": "standalone",
             "background_color": "#1f2937", "theme_color": "#1f2937",
             "description": "Un semplice timer Pomodoro per la gestione del tempo.",
             "icons": [{"src": "https://img.icons8.com/plasticine/192/000000/tomato.png", "sizes": "192x192", "type": "image/png"}, {"src": "https://img.icons8.com/plasticine/512/000000/tomato.png", "sizes": "512x512", "type": "image/png"}]
@@ -114,7 +115,6 @@
         document.head.appendChild(link);
 
         // --- CONFIGURAZIONE FIREBASE ---
-        // La tua configurazione personale è stata inserita qui
         const firebaseConfig = {
             apiKey: "AIzaSyDYw57vMSZy60Am6Ilf_41gfy6hMhKLdxg",
             authDomain: "pomodoro-timer-5202d.firebaseapp.com",
@@ -128,7 +128,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = firebaseConfig.appId; // Usa l'appId dalla tua configurazione
+        const appId = firebaseConfig.appId;
 
         let userId; 
         let timerStateRef, tasksCollectionRef;
@@ -194,6 +194,7 @@
                 appContainer.classList.remove('hidden');
             }, (error) => {
                 console.error("Errore nel listener del timer:", error);
+                loadingOverlay.innerHTML = `<p class="text-red-500 text-center p-4">Errore di permessi Firestore.<br>Controlla le regole del database.</p>`;
             });
         }
 
@@ -207,6 +208,8 @@
                 tasks.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
                 tasks.forEach(task => createTaskElement(task.text));
                 taskListContainer.classList.toggle('hidden', tasks.length === 0);
+            }, (error) => {
+                 console.error("Errore nel listener delle attività:", error);
             });
         }
         
@@ -293,11 +296,18 @@
             }
         }
 
-        async function startTimer(requestPerms = true) {
+        function startTimer(requestPerms = true) {
             if (isRunning) return;
+
+            // **FIX**: Gestione non bloccante dei permessi
             if (requestPerms && Notification.permission === "default") {
-                await Notification.requestPermission();
+                Notification.requestPermission().then(permission => {
+                    if (permission !== "granted") {
+                        console.warn("L'utente ha negato il permesso per le notifiche.");
+                    }
+                });
             }
+
             if (!audioContext) setupAudio();
             isRunning = true;
             timer = setInterval(countdown, 1000);
