@@ -86,7 +86,7 @@
              <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-300">Attività Completate</h2>
                 <button id="clear-tasks-btn" title="Pulisci lista" class="clear-btn text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
                 </button>
              </div>
              <ul id="task-list" class="space-y-2"></ul>
@@ -95,9 +95,9 @@
 
     <script type="module">
         // Importa le funzioni di Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, addDoc, deleteDoc, onSnapshot, collection, query, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, addDoc, deleteDoc, onSnapshot, collection, query, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
         // --- PWA SETUP ---
         const manifest = {
@@ -113,13 +113,22 @@
         link.href = manifestURL;
         document.head.appendChild(link);
 
-        // --- VARIABILI GLOBALI E CONFIGURAZIONE FIREBASE ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pomodoro-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // --- CONFIGURAZIONE FIREBASE ---
+        // La tua configurazione personale è stata inserita qui
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYw57vMSZy60Am6Ilf_41gfy6hMhKLdxg",
+            authDomain: "pomodoro-timer-5202d.firebaseapp.com",
+            projectId: "pomodoro-timer-5202d",
+            storageBucket: "pomodoro-timer-5202d.appspot.com",
+            messagingSenderId: "546940961789",
+            appId: "1:546940961789:web:8342c70da9b1fc60660f94"
+        };
 
+        // Inizializza Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const appId = firebaseConfig.appId; // Usa l'appId dalla tua configurazione
 
         let userId; 
         let timerStateRef, tasksCollectionRef;
@@ -165,11 +174,7 @@
             } else {
                 console.log("Nessun utente, tento l'accesso anonimo...");
                 try {
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    await signInAnonymously(auth);
                 } catch (error) {
                     console.error("Errore durante l'accesso anonimo:", error);
                     loadingOverlay.innerHTML = "<p>Errore di connessione a Firebase.</p>";
