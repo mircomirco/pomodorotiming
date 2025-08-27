@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Blocking</title>
+    <title>Pomodoro Timer</title>
     <!-- Meta tag per PWA -->
     <meta name="theme-color" content="#1f2937"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -102,24 +102,11 @@
 
     <script>
         // --- PWA SETUP ---
-        // 1. Creazione dinamica del Manifest
         const manifest = {
-            "name": "Pomodoro Timer",
-            "short_name": "Pomodoro",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#1f2937",
-            "theme_color": "#1f2937",
+            "name": "Pomodoro Timer", "short_name": "Pomodoro", "start_url": ".", "display": "standalone",
+            "background_color": "#1f2937", "theme_color": "#1f2937",
             "description": "Un semplice timer Pomodoro per la gestione del tempo.",
-            "icons": [{
-                "src": "https://img.icons8.com/plasticine/192/000000/tomato.png",
-                "sizes": "192x192",
-                "type": "image/png"
-            }, {
-                "src": "https://img.icons8.com/plasticine/512/000000/tomato.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }]
+            "icons": [{"src": "https://img.icons8.com/plasticine/192/000000/tomato.png", "sizes": "192x192", "type": "image/png"}, {"src": "https://img.icons8.com/plasticine/512/000000/tomato.png", "sizes": "512x512", "type": "image/png"}]
         };
         const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
         const manifestURL = URL.createObjectURL(manifestBlob);
@@ -128,45 +115,17 @@
         link.href = manifestURL;
         document.head.appendChild(link);
 
-        // 2. Registrazione del Service Worker
         if ('serviceWorker' in navigator) {
             const swContent = `
-                const CACHE_NAME = 'pomodoro-timer-cache-v1';
-                const urlsToCache = [
-                    '/',
-                    '/index.html' // Assumendo che il file si chiami così
-                ];
-
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                console.log('Opened cache');
-                                return cache.addAll(urlsToCache);
-                            })
-                    );
-                });
-
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then(response => {
-                                if (response) {
-                                    return response;
-                                }
-                                return fetch(event.request);
-                            }
-                        )
-                    );
-                });
+                self.addEventListener('install', event => { event.waitUntil(caches.open('pomodoro-cache-v1').then(cache => cache.addAll(['/']))); });
+                self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))); });
             `;
             const swBlob = new Blob([swContent], {type: 'application/javascript'});
             const swURL = URL.createObjectURL(swBlob);
-
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register(swURL)
-                    .then(registration => console.log('ServiceWorker registration successful with scope: ', registration.scope))
-                    .catch(err => console.log('ServiceWorker registration failed: ', err));
+                    .then(reg => console.log('ServiceWorker registrato.'))
+                    .catch(err => console.log('Registrazione ServiceWorker fallita: ', err));
             });
         }
         
@@ -226,9 +185,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission();
-            }
             loadTasks();
             loadTimerState();
             if (!isRunning) updateDisplay();
@@ -273,11 +229,23 @@
         }
 
         function showNotification(message) {
+            const notificationOptions = {
+                body: message,
+                icon: "https://img.icons8.com/plasticine/192/000000/tomato.png",
+                badge: "https://img.icons8.com/plasticine/100/000000/tomato.png",
+                vibrate: [200, 100, 200]
+            };
+
             if (Notification.permission === "granted") {
-                new Notification("Pomodoro Timer", {
-                    body: message,
-                    icon: "https://img.icons8.com/plasticine/100/000000/tomato.png"
-                });
+                if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification("Pomodoro Timer", notificationOptions);
+                    });
+                } else {
+                    new Notification("Pomodoro Timer", notificationOptions);
+                }
+            } else {
+                console.warn("Permesso per le notifiche non concesso.");
             }
         }
         
@@ -323,8 +291,16 @@
             }
         }
 
-        function startTimer() {
+        async function startTimer() {
             if (isRunning) return;
+
+            if (Notification.permission === "default") {
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") {
+                    console.warn("L'utente ha negato il permesso per le notifiche.");
+                }
+            }
+
             if (!audioContext) setupAudio();
             isRunning = true;
             timer = setInterval(countdown, 1000);
@@ -395,26 +371,20 @@
             taskListContainer.classList.add('hidden');
         }
         
-        // --- DB Viewer Logic ---
         function showDbData() {
             const timerState = localStorage.getItem('pomodoroTimerState');
             const tasks = localStorage.getItem('pomodoroTasks');
-            
             const formattedTimerState = timerState ? JSON.stringify(JSON.parse(timerState), null, 2) : 'Nessuno stato del timer salvato.';
             const formattedTasks = tasks ? JSON.stringify(JSON.parse(tasks), null, 2) : 'Nessuna attività salvata.';
-            
             dbContent.textContent = `// Stato del Timer\n${formattedTimerState}\n\n// Lista Attività\n${formattedTasks}`;
             dbModal.classList.remove('hidden');
         }
 
-        function hideDbModal() {
-            dbModal.classList.add('hidden');
-        }
+        function hideDbModal() { dbModal.classList.add('hidden'); }
         
         dbViewerBtn.addEventListener('click', showDbData);
         dbModalClose.addEventListener('click', hideDbModal);
         dbModalOverlay.addEventListener('click', hideDbModal);
-
         startBtn.addEventListener('click', startTimer);
         pauseBtn.addEventListener('click', pauseTimer);
         resetBtn.addEventListener('click', resetTimer);
@@ -436,4 +406,3 @@
     </script>
 </body>
 </html>
-
