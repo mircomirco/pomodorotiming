@@ -86,7 +86,7 @@
              <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-300">Attività Completate</h2>
                 <button id="clear-tasks-btn" title="Pulisci lista" class="clear-btn text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                    <svg xmlns="http://www.w.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
                 </button>
              </div>
              <ul id="task-list" class="space-y-2"></ul>
@@ -113,20 +113,6 @@
         link.href = manifestURL;
         document.head.appendChild(link);
 
-        if ('serviceWorker' in navigator) {
-            const swContent = `
-                self.addEventListener('install', event => { event.waitUntil(caches.open('pomodoro-cache-v1').then(cache => cache.addAll(['/']))); });
-                self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))); });
-            `;
-            const swBlob = new Blob([swContent], {type: 'application/javascript'});
-            const swURL = URL.createObjectURL(swBlob);
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register(swURL)
-                    .then(reg => console.log('ServiceWorker registrato.'))
-                    .catch(err => console.log('Registrazione ServiceWorker fallita: ', err));
-            });
-        }
-        
         // --- VARIABILI GLOBALI E CONFIGURAZIONE FIREBASE ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pomodoro-app';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
@@ -381,15 +367,7 @@
             };
 
             if (Notification.permission === "granted") {
-                // **MODIFICA PRINCIPALE: Usa il Service Worker se disponibile**
-                if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
-                    navigator.serviceWorker.ready.then(registration => {
-                        registration.showNotification("Pomodoro Timer", notificationOptions);
-                    });
-                } else {
-                    // Fallback per browser senza Service Worker
-                    new Notification("Pomodoro Timer", notificationOptions);
-                }
+                new Notification("Pomodoro Timer", notificationOptions);
             }
         }
         
