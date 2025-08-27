@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro Timer</title>
+    <!-- Meta tag per PWA -->
+    <meta name="theme-color" content="#1f2937"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pomodoro">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/plasticine/100/000000/tomato.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,32 +20,17 @@
             font-family: 'Inter', sans-serif;
             transition: background-color 0.5s ease;
         }
-        /* Stili per le animazioni e transizioni */
-        .timer-display {
-            font-weight: 900;
-            transition: color 0.5s ease;
-        }
-        .btn {
-            transition: all 0.2s ease;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .task-item {
-            animation: fadeIn 0.5s ease;
-        }
+        .timer-display { font-weight: 900; transition: color 0.5s ease; }
+        .btn { transition: all 0.2s ease; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .task-item { animation: fadeIn 0.5s ease; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .clear-btn {
-            opacity: 0.6;
-            transition: opacity 0.2s ease;
-        }
-        .clear-btn:hover {
-            opacity: 1;
-        }
+        .clear-btn { opacity: 0.6; transition: opacity 0.2s ease; }
+        .clear-btn:hover { opacity: 1; }
+        #db-modal-overlay { background-color: rgba(0,0,0,0.7); }
     </style>
 </head>
 <body id="app-body" class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
@@ -48,18 +40,13 @@
         <h1 id="session-title" class="text-2xl font-bold text-center mb-2 text-cyan-400 transition-colors duration-500">Sessione di Lavoro</h1>
         <p class="text-center text-gray-400 mb-6">Rimani concentrato, ce la puoi fare!</p>
 
-        <!-- Display del Timer -->
-        <div id="timer-display" class="timer-display text-8xl md:text-9xl text-center my-8 text-white">
-            25:00
-        </div>
+        <div id="timer-display" class="timer-display text-8xl md:text-9xl text-center my-8 text-white">25:00</div>
 
-        <!-- Input Attività Corrente -->
         <div class="mb-6">
             <label for="task-input" class="block text-sm font-medium text-gray-300 mb-2">Attività Corrente:</label>
             <input type="text" id="task-input" class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" placeholder="Es: Scrivere la relazione...">
         </div>
 
-        <!-- Controlli Principali -->
         <div class="flex justify-center space-x-4 mb-8">
             <button id="start-btn" class="btn bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-full shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -75,7 +62,6 @@
             </button>
         </div>
 
-        <!-- Impostazioni Personalizzabili -->
         <div id="settings" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div>
                 <label for="work-duration" class="block text-sm font-medium text-gray-300 mb-1">Lavoro (min):</label>
@@ -86,26 +72,105 @@
                 <input type="number" id="break-duration" value="5" min="1" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2">
             </div>
         </div>
+        
+        <div class="text-center mt-6">
+             <button id="db-viewer-btn" class="text-sm text-cyan-400 hover:text-cyan-300 underline">Visualizza Dati Salvati</button>
+        </div>
 
-        <!-- Lista Attività Completate -->
         <div id="task-list-container" class="mt-8 pt-4 border-t border-gray-700 hidden">
              <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-300">Attività Completate</h2>
                 <button id="clear-tasks-btn" title="Pulisci lista" class="clear-btn text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
                 </button>
              </div>
-             <ul id="task-list" class="space-y-2">
-                <!-- Le attività verranno aggiunte qui dinamicamente -->
-             </ul>
+             <ul id="task-list" class="space-y-2"></ul>
         </div>
-
+    </div>
+    
+    <!-- Modal per il DB Viewer -->
+    <div id="db-modal" class="fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div id="db-modal-overlay" class="absolute inset-0"></div>
+        <div class="relative w-full max-w-lg bg-gray-800 rounded-lg shadow-xl p-6">
+            <h3 class="text-lg font-bold mb-4">Dati salvati nel Local Storage</h3>
+            <pre id="db-content" class="bg-gray-900 text-sm text-green-400 p-4 rounded-md overflow-x-auto whitespace-pre-wrap break-all"></pre>
+            <button id="db-modal-close" class="absolute top-3 right-3 text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
     </div>
 
     <script>
-        // Riferimenti agli elementi del DOM
+        // --- PWA SETUP ---
+        // 1. Creazione dinamica del Manifest
+        const manifest = {
+            "name": "Pomodoro Timer",
+            "short_name": "Pomodoro",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#1f2937",
+            "theme_color": "#1f2937",
+            "description": "Un semplice timer Pomodoro per la gestione del tempo.",
+            "icons": [{
+                "src": "https://img.icons8.com/plasticine/192/000000/tomato.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            }, {
+                "src": "https://img.icons8.com/plasticine/512/000000/tomato.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+
+        // 2. Registrazione del Service Worker
+        if ('serviceWorker' in navigator) {
+            const swContent = `
+                const CACHE_NAME = 'pomodoro-timer-cache-v1';
+                const urlsToCache = [
+                    '/',
+                    '/index.html' // Assumendo che il file si chiami così
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                console.log('Opened cache');
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            }
+                        )
+                    );
+                });
+            `;
+            const swBlob = new Blob([swContent], {type: 'application/javascript'});
+            const swURL = URL.createObjectURL(swBlob);
+
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(swURL)
+                    .then(registration => console.log('ServiceWorker registration successful with scope: ', registration.scope))
+                    .catch(err => console.log('ServiceWorker registration failed: ', err));
+            });
+        }
+        
+        // --- APPLICAZIONE PRINCIPALE ---
         const body = document.getElementById('app-body');
         const sessionTitle = document.getElementById('session-title');
         const timerDisplay = document.getElementById('timer-display');
@@ -119,18 +184,19 @@
         const taskList = document.getElementById('task-list');
         const settingsDiv = document.getElementById('settings');
         const clearTasksBtn = document.getElementById('clear-tasks-btn');
+        const dbViewerBtn = document.getElementById('db-viewer-btn');
+        const dbModal = document.getElementById('db-modal');
+        const dbModalOverlay = document.getElementById('db-modal-overlay');
+        const dbModalClose = document.getElementById('db-modal-close');
+        const dbContent = document.getElementById('db-content');
 
-        // Variabili di stato del timer
-        let timer; // Per setInterval
+        let timer;
         let isRunning = false;
         let isWorkSession = true;
         let totalSeconds = 25 * 60;
-
-        // Audio per la notifica
         let audioContext;
         let notificationSound;
 
-        // Funzione per creare un suono di notifica per evitare blocchi del browser
         function setupAudio() {
             if (!audioContext) {
                 try {
@@ -141,9 +207,7 @@
                     gainNode.connect(audioContext.destination);
                     oscillator.type = 'sine';
                     notificationSound = () => {
-                        if (audioContext.state === 'suspended') {
-                            audioContext.resume();
-                        }
+                        if (audioContext.state === 'suspended') audioContext.resume();
                         const now = audioContext.currentTime;
                         gainNode.gain.setValueAtTime(0.5, now);
                         gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
@@ -155,26 +219,51 @@
                         newOscillator.type = 'sine';
                     };
                 } catch (e) {
-                    console.error("Web Audio API non è supportata in questo browser.", e);
+                    console.error("Web Audio API non è supportata.", e);
                     notificationSound = () => {}; 
                 }
             }
         }
 
-        // Chiede il permesso per le notifiche e carica le attività salvate
         document.addEventListener('DOMContentLoaded', () => {
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        console.log("Permesso per le notifiche concesso.");
-                    }
-                });
+                Notification.requestPermission();
             }
-            updateDisplay();
             loadTasks();
+            loadTimerState();
+            if (!isRunning) updateDisplay();
         });
 
-        // Funzione per aggiornare il display del timer e il titolo della pagina
+        function saveTimerState() {
+            const state = { totalSeconds, isWorkSession, isRunning, timestamp: Date.now() };
+            localStorage.setItem('pomodoroTimerState', JSON.stringify(state));
+        }
+
+        function loadTimerState() {
+            const savedState = JSON.parse(localStorage.getItem('pomodoroTimerState'));
+            if (!savedState) return;
+
+            isWorkSession = savedState.isWorkSession;
+            updateSessionUI();
+
+            if (savedState.isRunning) {
+                const timePassed = Math.floor((Date.now() - savedState.timestamp) / 1000);
+                const newTotalSeconds = savedState.totalSeconds - timePassed;
+                if (newTotalSeconds > 0) {
+                    totalSeconds = newTotalSeconds;
+                    startTimer();
+                } else {
+                    isWorkSession = !savedState.isWorkSession;
+                    totalSeconds = (isWorkSession ? parseInt(workDurationInput.value, 10) : parseInt(breakDurationInput.value, 10)) * 60;
+                    updateSessionUI();
+                    localStorage.removeItem('pomodoroTimerState');
+                }
+            } else {
+                totalSeconds = savedState.totalSeconds;
+            }
+            updateDisplay();
+        }
+
         function updateDisplay() {
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
@@ -183,7 +272,6 @@
             document.title = `${formattedTime} - ${isWorkSession ? 'Lavoro' : 'Pausa'}`;
         }
 
-        // Funzione per mostrare una notifica nel browser
         function showNotification(message) {
             if (Notification.permission === "granted") {
                 new Notification("Pomodoro Timer", {
@@ -192,33 +280,34 @@
                 });
             }
         }
+        
+        function updateSessionUI() {
+             if (isWorkSession) {
+                body.classList.remove('bg-emerald-900'); body.classList.add('bg-gray-900');
+                sessionTitle.textContent = "Sessione di Lavoro";
+                sessionTitle.classList.remove('text-emerald-300'); sessionTitle.classList.add('text-cyan-400');
+            } else {
+                body.classList.remove('bg-gray-900'); body.classList.add('bg-emerald-900');
+                sessionTitle.textContent = "Pausa";
+                sessionTitle.classList.remove('text-cyan-400'); sessionTitle.classList.add('text-emerald-300');
+            }
+        }
 
-        // Funzione per cambiare tra sessione di lavoro e pausa
         function switchSession() {
             clearInterval(timer);
             isRunning = false;
-
+            localStorage.removeItem('pomodoroTimerState');
             if (isWorkSession) {
                 logTask();
                 showNotification("Sessione di lavoro terminata! È ora di una pausa.");
                 isWorkSession = false;
                 totalSeconds = parseInt(breakDurationInput.value, 10) * 60;
-                body.classList.remove('bg-gray-900');
-                body.classList.add('bg-emerald-900');
-                sessionTitle.textContent = "Pausa";
-                sessionTitle.classList.remove('text-cyan-400');
-                sessionTitle.classList.add('text-emerald-300');
             } else {
                 showNotification("La pausa è finita! Si torna al lavoro.");
                 isWorkSession = true;
                 totalSeconds = parseInt(workDurationInput.value, 10) * 60;
-                body.classList.remove('bg-emerald-900');
-                body.classList.add('bg-gray-900');
-                sessionTitle.textContent = "Sessione di Lavoro";
-                sessionTitle.classList.remove('text-emerald-300');
-                sessionTitle.classList.add('text-cyan-400');
             }
-            
+            updateSessionUI();
             updateDisplay();
             startTimer();
         }
@@ -227,6 +316,7 @@
             if (totalSeconds > 0) {
                 totalSeconds--;
                 updateDisplay();
+                saveTimerState();
             } else {
                 notificationSound();
                 switchSession();
@@ -238,18 +328,18 @@
             if (!audioContext) setupAudio();
             isRunning = true;
             timer = setInterval(countdown, 1000);
-            startBtn.classList.add('hidden');
-            pauseBtn.classList.remove('hidden');
+            startBtn.classList.add('hidden'); pauseBtn.classList.remove('hidden');
             settingsDiv.querySelectorAll('input').forEach(input => input.disabled = true);
             taskInput.disabled = true;
+            saveTimerState();
         }
 
         function pauseTimer() {
             if (!isRunning) return;
             isRunning = false;
             clearInterval(timer);
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden'); pauseBtn.classList.add('hidden');
+            saveTimerState();
         }
 
         function resetTimer() {
@@ -258,22 +348,15 @@
             isWorkSession = true;
             totalSeconds = parseInt(workDurationInput.value, 10) * 60;
             updateDisplay();
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
+            updateSessionUI();
+            startBtn.classList.remove('hidden'); pauseBtn.classList.add('hidden');
             settingsDiv.querySelectorAll('input').forEach(input => input.disabled = false);
             taskInput.disabled = false;
             taskInput.value = "";
-            body.classList.remove('bg-emerald-900');
-            body.classList.add('bg-gray-900');
-            sessionTitle.textContent = "Sessione di Lavoro";
-            sessionTitle.classList.remove('text-emerald-300');
-            sessionTitle.classList.add('text-cyan-400');
             document.title = "Pomodoro Timer";
+            localStorage.removeItem('pomodoroTimerState');
         }
         
-        // --- NUOVE FUNZIONI PER IL SALVATAGGIO ---
-
-        // Funzione per creare l'elemento DOM per una singola attività
         function createTaskElement(taskText) {
             const li = document.createElement('li');
             li.className = 'task-item bg-gray-700 p-3 rounded-lg flex items-center';
@@ -282,43 +365,56 @@
             taskList.appendChild(li);
         }
 
-        // Funzione per salvare la lista attività nel localStorage
         function saveTasks() {
             const tasks = [];
-            document.querySelectorAll('#task-list li span').forEach(taskSpan => {
-                tasks.push(taskSpan.textContent);
-            });
+            document.querySelectorAll('#task-list li span').forEach(taskSpan => tasks.push(taskSpan.textContent));
             localStorage.setItem('pomodoroTasks', JSON.stringify(tasks));
         }
 
-        // Funzione per caricare le attività dal localStorage
         function loadTasks() {
             const savedTasks = JSON.parse(localStorage.getItem('pomodoroTasks'));
             if (savedTasks && savedTasks.length > 0) {
-                taskList.innerHTML = ''; // Pulisce la lista prima di caricarla
-                savedTasks.forEach(taskText => createTaskElement(taskText));
+                taskList.innerHTML = '';
+                savedTasks.forEach(createTaskElement);
                 taskListContainer.classList.remove('hidden');
             }
         }
 
-        // Funzione per registrare un'attività completata
         function logTask() {
             const taskText = taskInput.value.trim();
             if (taskText) {
                 createTaskElement(taskText);
-                saveTasks(); // Salva dopo aver aggiunto
+                saveTasks();
             }
             taskInput.value = "";
         }
 
-        // Funzione per pulire la lista e il localStorage
         function clearTasks() {
             taskList.innerHTML = '';
             localStorage.removeItem('pomodoroTasks');
             taskListContainer.classList.add('hidden');
         }
+        
+        // --- DB Viewer Logic ---
+        function showDbData() {
+            const timerState = localStorage.getItem('pomodoroTimerState');
+            const tasks = localStorage.getItem('pomodoroTasks');
+            
+            const formattedTimerState = timerState ? JSON.stringify(JSON.parse(timerState), null, 2) : 'Nessuno stato del timer salvato.';
+            const formattedTasks = tasks ? JSON.stringify(JSON.parse(tasks), null, 2) : 'Nessuna attività salvata.';
+            
+            dbContent.textContent = `// Stato del Timer\n${formattedTimerState}\n\n// Lista Attività\n${formattedTasks}`;
+            dbModal.classList.remove('hidden');
+        }
 
-        // Event Listeners
+        function hideDbModal() {
+            dbModal.classList.add('hidden');
+        }
+        
+        dbViewerBtn.addEventListener('click', showDbData);
+        dbModalClose.addEventListener('click', hideDbModal);
+        dbModalOverlay.addEventListener('click', hideDbModal);
+
         startBtn.addEventListener('click', startTimer);
         pauseBtn.addEventListener('click', pauseTimer);
         resetBtn.addEventListener('click', resetTimer);
@@ -337,7 +433,6 @@
                 updateDisplay();
             }
         });
-
     </script>
 </body>
 </html>
